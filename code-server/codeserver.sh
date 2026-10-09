@@ -158,11 +158,18 @@ start_code_server() {
   echo " Auth Mode : ${AUTH}"
   echo "=========================================="
 
-  exec code-server \
-    --bind-addr "${HOST}:${PORT}" \
-    --auth "${AUTH}" \
-    "${EXTRA_ARGS[@]}" \
-    "${TARGET_DIR}"
+  if [[ ${#EXTRA_ARGS[@]} -gt 0 ]]; then
+    exec code-server \
+      --bind-addr "${HOST}:${PORT}" \
+      --auth "${AUTH}" \
+      "${EXTRA_ARGS[@]}" \
+      "${TARGET_DIR}"
+  else
+    exec code-server \
+      --bind-addr "${HOST}:${PORT}" \
+      --auth "${AUTH}" \
+      "${TARGET_DIR}"
+  fi
 }
 
 install_code_server
