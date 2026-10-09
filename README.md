@@ -5,6 +5,7 @@ A collection of useful utility and automation scripts.
 ## Scripts Index
 
 - [code-server/codeserver.sh](code-server/codeserver.sh): Automatically installs and starts [code-server](https://github.com/coder/code-server) on port `9090` targeting `/root` by default, with support for overriding the workspace path, port, and authentication flags via arguments.
+- [code-server/uninstall.sh](code-server/uninstall.sh): Stops running instances, tears down systemd services, detects installation method (apt, dnf, pacman, brew, npm, standalone) to cleanly uninstall `code-server`, with optional `--purge` for user settings and cached data.
 
 ---
 
@@ -41,6 +42,35 @@ A collection of useful utility and automation scripts.
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/ShubhamBhavsar101/scripts/main/code-server/codeserver.sh | bash -s -- /custom/path
+```
+
+---
+
+### `code-server/uninstall.sh`
+
+#### Features
+- **Process Cleanup**: Kills active `code-server` processes.
+- **Service Teardown**: Stops and disables systemd unit files if present.
+- **Auto Detection**: Detects package manager (`apt`, `dnf`, `yum`, `pacman`, `brew`, `npm`) or standalone binaries in `~/.local` and `/usr/lib`.
+- **Optional Purge**: Supports `--purge` to delete configuration and extensions (`~/.config/code-server` and `~/.local/share/code-server`).
+
+#### Usage
+
+```bash
+# Standard uninstall (removes binaries & services, preserves configs)
+./code-server/uninstall.sh
+
+# Full purge (removes binaries, systemd units, configs, and extensions)
+./code-server/uninstall.sh --purge
+
+# Non-interactive full purge
+./code-server/uninstall.sh -y --purge
+```
+
+#### One-Liner Execution via curl
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/ShubhamBhavsar101/scripts/main/code-server/uninstall.sh | bash -s -- -y --purge
 ```
 
 ---
