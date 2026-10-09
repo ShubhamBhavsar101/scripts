@@ -124,13 +124,9 @@ install_code_server() {
     exit 1
   fi
 
-  # Check if sudo is available and needed
-  if [[ $EUID -ne 0 ]] && command -v sudo >/dev/null 2>&1; then
-    echo "[codeserver] Running installer with sudo..."
-    $FETCH_CMD | sudo sh
-  else
-    $FETCH_CMD | sh
-  fi
+  # Run installer (the official script handles sudo elevation internally on Linux when needed,
+  # and avoids running as root on macOS to preserve Homebrew compatibility)
+  $FETCH_CMD | sh
 
   if ! command -v code-server >/dev/null 2>&1; then
     echo "Error: Failed to install code-server." >&2

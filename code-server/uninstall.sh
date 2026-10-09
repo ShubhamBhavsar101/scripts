@@ -148,10 +148,16 @@ if command -v pacman >/dev/null 2>&1 && pacman -Qi code-server >/dev/null 2>&1; 
 fi
 
 # Method: macOS Homebrew
-if command -v brew >/dev/null 2>&1 && brew list code-server >/dev/null 2>&1; then
-  echo "Detected Homebrew installation. Removing formula..."
-  brew uninstall code-server
-  REMOVED_ANY=true
+if command -v brew >/dev/null 2>&1; then
+  BREW_EXEC="brew"
+  if [[ $EUID -eq 0 ]] && [[ -n "${SUDO_USER:-}" ]]; then
+    BREW_EXEC="sudo -u ${SUDO_USER} brew"
+  fi
+  if $BREW_EXEC list code-server >/dev/null 2>&1; then
+    echo "Detected Homebrew installation. Removing formula..."
+    $BREW_EXEC uninstall code-server
+    REMOVED_ANY=true
+  fi
 fi
 
 # Method: Global npm package
