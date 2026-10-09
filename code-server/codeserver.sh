@@ -12,10 +12,12 @@ set -euo pipefail
 DEFAULT_DIR="/root"
 DEFAULT_PORT="9090"
 DEFAULT_HOST="0.0.0.0"
+DEFAULT_AUTH="none"
 
 TARGET_DIR=""
 PORT="${PORT:-$DEFAULT_PORT}"
 HOST="${HOST:-$DEFAULT_HOST}"
+AUTH="${AUTH:-$DEFAULT_AUTH}"
 EXTRA_ARGS=()
 
 show_help() {
@@ -31,16 +33,16 @@ Options:
   -d, --dir DIR           Target workspace directory (default: /root)
   -p, --port PORT         Port to bind code-server to (default: 9090)
   -b, --bind HOST         Host/IP to bind to (default: 0.0.0.0)
-      --auth TYPE         Authentication type (e.g. password, none)
+      --auth TYPE         Authentication type: none or password (default: none)
   -h, --help              Show this help message and exit
 
 Any unrecognized options will be passed directly through to code-server.
 
 Examples:
-  ./codeserver.sh                           # Runs on /root:9090
+  ./codeserver.sh                           # Runs on /root:9090 (no password required)
   ./codeserver.sh /home/ubuntu/projects     # Runs on /home/ubuntu/projects:9090
   ./codeserver.sh --port 8080 /var/www      # Runs on /var/www:8080
-  ./codeserver.sh --auth none /workspace    # Disables password auth
+  ./codeserver.sh --auth password /project  # Enables password authentication
 EOF
 }
 
@@ -80,7 +82,7 @@ while [[ $# -gt 0 ]]; do
       ;;
     --auth)
       if [[ -n "${2:-}" ]]; then
-        EXTRA_ARGS+=("--auth" "$2")
+        AUTH="$2"
         shift 2
       else
         echo "Error: --auth requires an argument (e.g., password, none)." >&2
@@ -157,10 +159,12 @@ start_code_server() {
   echo " Starting code-server"
   echo " Workspace : ${TARGET_DIR}"
   echo " Bind Addr : ${HOST}:${PORT}"
+  echo " Auth Mode : ${AUTH}"
   echo "=========================================="
 
   exec code-server \
     --bind-addr "${HOST}:${PORT}" \
+    --auth "${AUTH}" \
     "${EXTRA_ARGS[@]}" \
     "${TARGET_DIR}"
 }
