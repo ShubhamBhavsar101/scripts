@@ -5,12 +5,84 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PACKAGE="actions-runner-linux-arm64-2.337.0.tar.gz"
 ARCHIVE_PATH="${SCRIPT_DIR}/${PACKAGE}"
 
-# Environment & CLI defaults
+# Detect if user passed env vars explicitly
+RUNNER_NAME_FROM_ENV="${RUNNER_NAME:-}"
+TOKEN_FROM_ENV="${TOKEN:-}"
+
+# Defaults
 TOKEN="${TOKEN:-APU474NU4QE6APBVNNVBUYLKZ5LG6}"
 RUNNER_NAME="${RUNNER_NAME:-$(hostname)}"
 LABELS="${LABELS:-infra,infra-arm64,self-hosted,arm64,taskforge-runner}"
 REPO_URL="${REPO_URL:-https://github.com/ShubhamBhavsar101/Taskforge}"
 RECONFIG="${RECONFIG:-false}"
+
+HAS_CLI_ARGS=false
+if [ $# -gt 0 ]; then
+  HAS_CLI_ARGS=true
+fi
+
+# ==============================================================================
+# MODE 1: No arguments & no specific runner requested -> Launch ALL available runners
+# ==============================================================================
+if [ "${HAS_CLI_ARGS}" = "false" ] && [ -z "${RUNNER_NAME_FROM_ENV}" ] && [ -z "${TOKEN_FROM_ENV}" ]; then
+  echo "==> No specific runner arguments provided."
+  echo "==> Searching for configured runners in ${SCRIPT_DIR}..."
+
+  RUNNER_DIRS=()
+  for dir in "${SCRIPT_DIR}"/actions-runner*; do
+    if [ -d "${dir}" ] && [ -f "${dir}/.runner" ] && [ -f "${dir}/run.sh" ]; then
+      RUNNER_DIRS+=("${dir}")
+    fi
+  done
+
+  if [ ${#RUNNER_DIRS[@]} -eq 0 ]; then
+    echo "No configured runners found in ${SCRIPT_DIR}."
+    echo "Configure a new runner with: $0 --name <RUNNER_NAME> --token <TOKEN>"
+    exit 1
+  fi
+
+  echo "==> Found ${#RUNNER_DIRS[@]} configured runner(s):"
+  for rdir in "${RUNNER_DIRS[@]}"; do
+    echo "    • $(basename "${rdir}")"
+  done
+
+  # Trap Ctrl+C (SIGINT) and SIGTERM to stop all child runners cleanly
+  PIDS=()
+  cleanup() {
+    echo ""
+    echo "==> Stopping all active runners..."
+    trap - SIGINT SIGTERM EXIT
+    for pid in "${PIDS[@]:-}"; do
+      if [ -n "${pid}" ] && kill -0 "${pid}" 2>/dev/null; then
+        kill -TERM "${pid}" 2>/dev/null || true
+      fi
+    done
+    wait 2>/dev/null || true
+    echo "==> All runners stopped."
+    exit 0
+  }
+  trap cleanup SIGINT SIGTERM
+
+  echo "==> Starting all ${#RUNNER_DIRS[@]} runners in parallel..."
+  for rdir in "${RUNNER_DIRS[@]}"; do
+    rname="$(basename "${rdir}")"
+    (
+      cd "${rdir}"
+      ./run.sh 2>&1 | while IFS= read -r line; do
+        printf "[%s] %s\n" "${rname}" "${line}"
+      done
+    ) &
+    PIDS+=($!)
+  done
+
+  # Wait for all background runner processes
+  wait
+  exit 0
+fi
+
+# ==============================================================================
+# MODE 2: Specific runner configuration or targeted execution
+# ==============================================================================
 
 # Parse CLI arguments
 while [[ $# -gt 0 ]]; do
@@ -53,7 +125,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     -h|--help)
       echo "Usage: $0 [options]"
-      echo "Options:"
+      echo ""
+      echo "When run with NO arguments, all available configured runners will start simultaneously."
+      echo ""
+      echo "Options for single runner setup:"
       echo "  --token <token>       GitHub Runner registration token"
       echo "  --name <name>         Unique name for this runner (default: $(hostname))"
       echo "  --url <url>           Repository URL (default: ${REPO_URL})"
