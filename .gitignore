@@ -13,3 +13,9 @@ Thumbs.db
 .idea/
 *.swp
 *~
+
+# GitHub Actions Runner directories and archives
+**/actions-runner/
+**/actions-runner-*/
+**actions-runner*
+*.tar.gz
