@@ -5,12 +5,68 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PACKAGE="actions-runner-linux-arm64-2.337.0.tar.gz"
 ARCHIVE_PATH="${SCRIPT_DIR}/${PACKAGE}"
 
-# Environment configuration
+# Environment & CLI defaults
 TOKEN="${TOKEN:-APU474NU4QE6APBVNNVBUYLKZ5LG6}"
 RUNNER_NAME="${RUNNER_NAME:-$(hostname)}"
 LABELS="${LABELS:-infra,infra-arm64,self-hosted,arm64,taskforge-runner}"
 REPO_URL="${REPO_URL:-https://github.com/ShubhamBhavsar101/Taskforge}"
 RECONFIG="${RECONFIG:-false}"
+
+# Parse CLI arguments
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --token=*)
+      TOKEN="${1#*=}"
+      shift
+      ;;
+    --token)
+      TOKEN="$2"
+      shift 2
+      ;;
+    --name=*)
+      RUNNER_NAME="${1#*=}"
+      shift
+      ;;
+    --name)
+      RUNNER_NAME="$2"
+      shift 2
+      ;;
+    --url=*)
+      REPO_URL="${1#*=}"
+      shift
+      ;;
+    --url)
+      REPO_URL="$2"
+      shift 2
+      ;;
+    --labels=*)
+      LABELS="${1#*=}"
+      shift
+      ;;
+    --labels)
+      LABELS="$2"
+      shift 2
+      ;;
+    --reconfig)
+      RECONFIG="true"
+      shift
+      ;;
+    -h|--help)
+      echo "Usage: $0 [options]"
+      echo "Options:"
+      echo "  --token <token>       GitHub Runner registration token"
+      echo "  --name <name>         Unique name for this runner (default: $(hostname))"
+      echo "  --url <url>           Repository URL (default: ${REPO_URL})"
+      echo "  --labels <labels>     Comma-separated labels"
+      echo "  --reconfig            Reset and re-register runner config"
+      exit 0
+      ;;
+    *)
+      echo "Unknown argument: $1"
+      shift
+      ;;
+  esac
+done
 
 # Reuse existing archive if already downloaded in old folder
 if [ ! -f "${ARCHIVE_PATH}" ] && [ -f "${SCRIPT_DIR}/actions-runner/${PACKAGE}" ]; then
@@ -35,7 +91,7 @@ if [ ! -f "config.sh" ]; then
 fi
 
 # Reset local configuration if --reconfig flag or RECONFIG=true is passed
-if [ "${RECONFIG}" = "true" ] || [ "${1:-}" = "--reconfig" ]; then
+if [ "${RECONFIG}" = "true" ]; then
   echo "==> Reconfiguration requested. Resetting local config for ${RUNNER_NAME}..."
   rm -f .runner .credentials*
 fi
