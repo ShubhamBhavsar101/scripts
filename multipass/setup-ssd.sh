@@ -177,7 +177,7 @@ fi
 info "Verifying Multipass connection (waiting for daemon to initialize)..."
 CONNECTED=false
 for i in {1..20}; do
-  if multipass list >/dev/null 2>&1; then
+  if sudo -u "${TARGET_USER}" multipass list >/dev/null 2>&1; then
     CONNECTED=true
     break
   fi
@@ -193,7 +193,7 @@ if [[ "${CONNECTED}" == "true" ]]; then
   ok "  Storage is active on: ${SSD_VOLUME}                      "
   ok "=========================================================="
   echo ""
-  multipass list
+  sudo -u "${TARGET_USER}" multipass list
   echo ""
   info "Available helpers in your shell (run 'source ~/.zshrc' to use now):"
   echo "  - multipass-eject  : Safely stops VMs and ejects SSD before disconnecting"
