@@ -77,4 +77,21 @@ multipass-resume() {
 
 ---
 
+## Restoring Storage Back to Mac Internal SSD
+
+If you ever want to switch Multipass back to your internal Mac drive, run:
+
+```bash
+sudo ./restore-internal.sh
+```
+
+### What this does:
+1. Stops all running VMs and shuts down daemon processes.
+2. Removes the external SSD symlink.
+3. Creates a fresh internal directory at `/var/root/Library/Application Support/multipassd`.
+4. Leaves all your VM data on the external SSD completely safe and untouched so you can switch back to it anytime.
+5. Restarts `multipassd` on internal storage and verifies connection.
+
+---
+
 © 2026 Multipass External SSD Tools. Developed by Shubham Bhavsar.

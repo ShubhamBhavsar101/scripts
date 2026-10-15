@@ -8,6 +8,7 @@ A collection of useful utility and automation scripts.
 - [code-server/uninstall.sh](code-server/uninstall.sh): Stops running instances, tears down systemd services, detects installation method (apt, dnf, pacman, brew, npm, standalone) to cleanly uninstall `code-server`, with optional `--purge` for user settings and cached data.
 - [kind/install-kind.sh](kind/install-kind.sh): Downloads and installs the latest versions of [kind](https://kind.sigs.k8s.io/) (Kubernetes in Docker) and [kubectl](https://kubernetes.io/docs/tasks/tools/) for the host architecture.
 - [multipass/setup-ssd.sh](multipass/setup-ssd.sh): Automates configuring Canonical Multipass to store VM disks and data on an external SSD on macOS, fixing permissions, TCC errors, and corrupted daemon locks.
+- [multipass/restore-internal.sh](multipass/restore-internal.sh): Reverts Multipass storage back to the Mac internal SSD, leaving external SSD VM data untouched for future use.
 
 ---
 
