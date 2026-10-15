@@ -18,6 +18,7 @@ sudo ./setup-ssd.sh /Volumes/YourSSDName
 3. **Storage Symlink**: Moves and symlinks `/var/root/Library/Application Support/multipassd` to your external SSD.
 4. **Cache & Process Cleanup**: Terminates orphaned QEMU processes and cleans broken image caches and bridge locks.
 5. **Daemon Launch**: Kicks off `multipassd` cleanly and validates connectivity.
+6. **ZSH Helpers**: Automatically appends `multipass-eject` and `multipass-resume` functions into `~/.zshrc`.
 
 ---
 
@@ -76,4 +77,4 @@ multipass-resume() {
 
 ---
 
-© 2026 Multipass External SSD Tools. Developed by Shubham Bhavsar. Runs 100% locally.
+© 2026 Multipass External SSD Tools. Developed by Shubham Bhavsar.

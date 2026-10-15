@@ -120,11 +120,60 @@ fi
 ok "Cache and configs sanitized."
 
 # --- Step 6: Start multipassd daemon ---
-info "Step 6/6: Starting Multipass daemon..."
+info "Step 6/7: Starting Multipass daemon..."
 launchctl bootstrap system /Library/LaunchDaemons/com.canonical.multipassd.plist 2>/dev/null || \
 launchctl kickstart -k system/com.canonical.multipassd
 
 sleep 2
+
+# --- Step 7: Configure .zshrc helpers for safe eject & resume ---
+TARGET_USER="${SUDO_USER:-$(logname 2>/dev/null || whoami)}"
+USER_HOME="$(eval echo "~${TARGET_USER}")"
+ZSHRC="${USER_HOME}/.zshrc"
+
+info "Step 7/7: Configuring zsh helpers in ${ZSHRC} for ${TARGET_USER}..."
+if [[ -f "${ZSHRC}" ]]; then
+  if grep -q "multipass-eject" "${ZSHRC}"; then
+    ok "multipass-eject and multipass-resume already exist in ${ZSHRC}."
+  else
+    cat <<'EOF' >> "${ZSHRC}"
+
+# Multipass External SSD Helpers
+multipass-eject() {
+  echo "Stopping all Multipass VMs..."
+  multipass stop --all 2>/dev/null
+
+  echo "Stopping Multipass daemon & QEMU..."
+  sudo launchctl bootout system/com.canonical.multipassd 2>/dev/null
+  sudo pkill -9 -f "qemu-system-aarch64" 2>/dev/null
+  sudo pkill -9 -f "multipassd" 2>/dev/null
+  sleep 1
+
+  echo "Ejecting external SSD..."
+  if diskutil eject /Volumes/ShubhEVM; then
+    echo "✅ Safe to disconnect your SSD!"
+  else
+    echo "⚠️ Failed to unmount volume. Please check open files before pulling cable."
+  fi
+}
+
+multipass-resume() {
+  if [ ! -d "/Volumes/ShubhEVM/multipassd" ]; then
+    echo "❌ SSD not detected! Please plug in the SSD first."
+    return 1
+  fi
+  echo "Starting Multipass daemon..."
+  sudo launchctl bootstrap system /Library/LaunchDaemons/com.canonical.multipassd.plist 2>/dev/null || sudo launchctl kickstart -k system/com.canonical.multipassd
+  sleep 2
+  multipass list
+  echo "✅ Multipass is ready!"
+}
+EOF
+    # Ensure proper file ownership
+    chown "${TARGET_USER}" "${ZSHRC}" 2>/dev/null || true
+    ok "Added multipass-eject and multipass-resume to ${ZSHRC}."
+  fi
+fi
 
 # Verify CLI connection
 if multipass list >/dev/null 2>&1; then
