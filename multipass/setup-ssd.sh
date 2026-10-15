@@ -174,15 +174,17 @@ EOF
 fi
 
 # --- Verify CLI connection with retry loop ---
-info "Verifying Multipass connection..."
+info "Verifying Multipass connection (waiting for daemon to initialize)..."
 CONNECTED=false
-for i in {1..8}; do
+for i in {1..20}; do
   if multipass list >/dev/null 2>&1; then
     CONNECTED=true
     break
   fi
+  printf "."
   sleep 1
 done
+echo ""
 
 if [[ "${CONNECTED}" == "true" ]]; then
   echo ""
