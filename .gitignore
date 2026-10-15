@@ -19,3 +19,8 @@ Thumbs.db
 **/actions-runner-*/
 **actions-runner*
 *.tar.gz
+
+# Downloaded binaries & installers
+**/kubectl
+**/kind
+

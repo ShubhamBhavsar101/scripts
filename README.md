@@ -6,9 +6,35 @@ A collection of useful utility and automation scripts.
 
 - [code-server/codeserver.sh](code-server/codeserver.sh): Automatically installs and starts [code-server](https://github.com/coder/code-server) on port `9090` targeting `/root` by default, with support for overriding the workspace path, port, and authentication flags via arguments.
 - [code-server/uninstall.sh](code-server/uninstall.sh): Stops running instances, tears down systemd services, detects installation method (apt, dnf, pacman, brew, npm, standalone) to cleanly uninstall `code-server`, with optional `--purge` for user settings and cached data.
+- [common/setup-config.sh](common/setup-config.sh): Automates setup of Git `git acp` (one-step add, commit, and push with auto-upstream) and Kubernetes `alias k='kubectl'` (with dynamic completion) in `~/.bashrc`, `~/.bash_aliases`, and `~/.zshrc`.
+- [kind/install-docker.sh](kind/install-docker.sh): Downloads and installs official Docker CE via the official convenience script, enables the systemd service, and adds the current user to the `docker` group.
 - [kind/install-kind.sh](kind/install-kind.sh): Downloads and installs the latest versions of [kind](https://kind.sigs.k8s.io/) (Kubernetes in Docker) and [kubectl](https://kubernetes.io/docs/tasks/tools/) for the host architecture.
 - [multipass/setup-ssd.sh](multipass/setup-ssd.sh): Automates configuring Canonical Multipass to store VM disks and data on an external SSD on macOS, fixing permissions, TCC errors, and corrupted daemon locks.
 - [multipass/restore-internal.sh](multipass/restore-internal.sh): Reverts Multipass storage back to the Mac internal SSD, leaving external SSD VM data untouched for future use.
+
+---
+
+### `common/setup-config.sh`
+
+#### Features
+- **Git User Setup**: Configures Git `user.name` and `user.email`.
+- **Git `git acp`**: Configures `git acp "<message>"` (`git add -A && git commit -m "$*" && git push`).
+- **Kubernetes Alias**: Sets `alias k='kubectl'` in `~/.bash_aliases`.
+- **Cross-Shell**: Updates `~/.bash_aliases` (sourced by `~/.bashrc`) and `~/.zshrc` safely and idempotently.
+
+#### Usage
+
+```bash
+# Run setup script with defaults
+./common/setup-config.sh
+
+# Configure only git settings
+./common/setup-config.sh --git-only
+
+# Configure only shell aliases
+./common/setup-config.sh --shell-only
+```
+
 
 ---
 
