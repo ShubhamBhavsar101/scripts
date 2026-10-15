@@ -58,12 +58,12 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 # --- Step 1: Enable POSIX disk ownership on external SSD ---
-info "Step 1/6: Ensuring disk ownership is enabled on ${SSD_VOLUME}..."
+info "Step 1/7: Ensuring disk ownership is enabled on ${SSD_VOLUME}..."
 diskutil enableOwnership "${SSD_VOLUME}" >/dev/null 2>&1 || true
 ok "Ownership enabled on external drive."
 
 # --- Step 2: Stop hung processes and unload daemon ---
-info "Step 2/6: Stopping Multipass services and cleaning orphaned processes..."
+info "Step 2/7: Stopping Multipass services and cleaning orphaned processes..."
 killall -9 qemu-system-aarch64 2>/dev/null || true
 killall -9 multipassd 2>/dev/null || true
 launchctl bootout system/com.canonical.multipassd 2>/dev/null || true
@@ -71,7 +71,7 @@ sleep 1
 ok "Processes stopped."
 
 # --- Step 3: Prepare SSD directory structure and permissions ---
-info "Step 3/6: Setting up directory structure on SSD..."
+info "Step 3/7: Setting up directory structure on SSD..."
 mkdir -p "${SSD_MULTIPASS_DIR}/ssh-keys"
 mkdir -p "${SSD_MULTIPASS_DIR}/qemu/vault"
 
@@ -82,7 +82,7 @@ chmod -R 777 "${SSD_MULTIPASS_DIR}" 2>/dev/null || true
 ok "Permissions and ssh-keys pre-created on ${SSD_MULTIPASS_DIR}."
 
 # --- Step 4: Configure system symlink ---
-info "Step 4/6: Linking default storage path to SSD..."
+info "Step 4/7: Linking default storage path to SSD..."
 if [[ -L "${DEFAULT_MULTIPASS_DIR}" ]]; then
   CURRENT_TARGET="$(readlink "${DEFAULT_MULTIPASS_DIR}" || true)"
   if [[ "${CURRENT_TARGET}" == "${SSD_MULTIPASS_DIR}" ]]; then
@@ -109,7 +109,7 @@ else
 fi
 
 # --- Step 5: Clean up corrupted image downloads & broken bridge configs ---
-info "Step 5/6: Flushing bad image cache & resetting potential bridge locks..."
+info "Step 5/7: Flushing bad image cache & resetting potential bridge locks..."
 rm -rf /var/root/Library/Caches/multipassd/qemu/vault/images/* 2>/dev/null || true
 
 # If vm instances json contains broken bridged settings, clean them
@@ -123,8 +123,6 @@ ok "Cache and configs sanitized."
 info "Step 6/7: Starting Multipass daemon..."
 launchctl bootstrap system /Library/LaunchDaemons/com.canonical.multipassd.plist 2>/dev/null || \
 launchctl kickstart -k system/com.canonical.multipassd
-
-sleep 2
 
 # --- Step 7: Configure .zshrc helpers for safe eject & resume ---
 TARGET_USER="${SUDO_USER:-$(logname 2>/dev/null || whoami)}"
@@ -175,14 +173,29 @@ EOF
   fi
 fi
 
-# Verify CLI connection
-if multipass list >/dev/null 2>&1; then
+# --- Verify CLI connection with retry loop ---
+info "Verifying Multipass connection..."
+CONNECTED=false
+for i in {1..8}; do
+  if multipass list >/dev/null 2>&1; then
+    CONNECTED=true
+    break
+  fi
+  sleep 1
+done
+
+if [[ "${CONNECTED}" == "true" ]]; then
   echo ""
   ok "=========================================================="
-  ok "  Multipass is running successfully on your external SSD! "
+  ok "  ✅ Multipass setup script ran successfully!              "
+  ok "  Storage is active on: ${SSD_VOLUME}                      "
   ok "=========================================================="
   echo ""
   multipass list
+  echo ""
+  info "Available helpers in your shell (run 'source ~/.zshrc' to use now):"
+  echo "  - multipass-eject  : Safely stops VMs and ejects SSD before disconnecting"
+  echo "  - multipass-resume : Starts daemon and verifies instances when reconnecting"
 else
   warn "Multipass daemon started, but CLI handshake is still pending."
   warn "If 'Operation not permitted' occurs, ensure Full Disk Access is granted in macOS:"
@@ -192,3 +205,4 @@ else
   echo "     - /Library/Application Support/com.canonical.multipass/bin/qemu-system-aarch64"
   echo "     - Terminal (or your active shell/terminal app)"
 fi
+
