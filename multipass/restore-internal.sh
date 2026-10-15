@@ -43,7 +43,7 @@ fi
 TARGET_USER="${SUDO_USER:-$(logname 2>/dev/null || whoami)}"
 
 # --- Step 1: Stop services and kill lingering processes ---
-info "Step 1/4: Stopping Multipass services..."
+info "Step 1/3: Stopping Multipass services..."
 sudo -u "${TARGET_USER}" multipass stop --all 2>/dev/null || true
 launchctl bootout system/com.canonical.multipassd 2>/dev/null || true
 killall -9 qemu-system-aarch64 2>/dev/null || true
@@ -52,7 +52,7 @@ sleep 1
 ok "Services stopped."
 
 # --- Step 2: Remove symlink and create clean internal directory ---
-info "Step 2/4: Reverting storage to Mac internal drive..."
+info "Step 2/3: Reverting storage to Mac internal drive..."
 if [[ -L "${DEFAULT_MULTIPASS_DIR}" ]]; then
   PREV_TARGET="$(readlink "${DEFAULT_MULTIPASS_DIR}" || true)"
   rm -f "${DEFAULT_MULTIPASS_DIR}"
@@ -65,13 +65,8 @@ mkdir -p "${DEFAULT_MULTIPASS_DIR}"
 chmod 755 "${DEFAULT_MULTIPASS_DIR}"
 ok "Created fresh internal directory at ${DEFAULT_MULTIPASS_DIR}."
 
-# --- Step 3: Flush temporary cache ---
-info "Step 3/4: Flushing image cache..."
-rm -rf /var/root/Library/Caches/multipassd/qemu/vault/images/* 2>/dev/null || true
-ok "Cache flushed."
-
-# --- Step 4: Restart multipassd daemon ---
-info "Step 4/4: Starting Multipass daemon..."
+# --- Step 3: Restart multipassd daemon ---
+info "Step 3/3: Starting Multipass daemon..."
 launchctl bootstrap system /Library/LaunchDaemons/com.canonical.multipassd.plist 2>/dev/null || \
 launchctl kickstart -k system/com.canonical.multipassd
 

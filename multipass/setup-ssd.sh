@@ -108,16 +108,13 @@ else
   ok "Symlink created."
 fi
 
-# --- Step 5: Clean up corrupted image downloads & broken bridge configs ---
-info "Step 5/7: Flushing bad image cache & resetting potential bridge locks..."
-rm -rf /var/root/Library/Caches/multipassd/qemu/vault/images/* 2>/dev/null || true
-
-# If vm instances json contains broken bridged settings, clean them
+# --- Step 5: Sanitize configs & reset potential bridge locks ---
+info "Step 5/7: Sanitizing configs & resetting potential bridge locks..."
 VM_JSON="${SSD_MULTIPASS_DIR}/qemu/multipassd-vm-instances.json"
 if [[ -f "${VM_JSON}" ]]; then
   sed -i '' 's/"bridged_network":[[:space:]]*"[^"]*"/"bridged_network": ""/g' "${VM_JSON}" 2>/dev/null || true
 fi
-ok "Cache and configs sanitized."
+ok "Configurations sanitized (cached base images preserved)."
 
 # --- Step 6: Start multipassd daemon ---
 info "Step 6/7: Starting Multipass daemon..."
