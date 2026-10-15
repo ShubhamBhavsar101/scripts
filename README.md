@@ -7,6 +7,7 @@ A collection of useful utility and automation scripts.
 - [code-server/codeserver.sh](code-server/codeserver.sh): Automatically installs and starts [code-server](https://github.com/coder/code-server) on port `9090` targeting `/root` by default, with support for overriding the workspace path, port, and authentication flags via arguments.
 - [code-server/uninstall.sh](code-server/uninstall.sh): Stops running instances, tears down systemd services, detects installation method (apt, dnf, pacman, brew, npm, standalone) to cleanly uninstall `code-server`, with optional `--purge` for user settings and cached data.
 - [kind/install-kind.sh](kind/install-kind.sh): Downloads and installs the latest versions of [kind](https://kind.sigs.k8s.io/) (Kubernetes in Docker) and [kubectl](https://kubernetes.io/docs/tasks/tools/) for the host architecture.
+- [multipass/setup-ssd.sh](multipass/setup-ssd.sh): Automates configuring Canonical Multipass to store VM disks and data on an external SSD on macOS, fixing permissions, TCC errors, and corrupted daemon locks.
 
 ---
 
