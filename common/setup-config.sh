@@ -6,7 +6,9 @@
 # Configures:
 # 1. Git user setup (user.name and user.email)
 # 2. Git 'acp' alias (git add -A && git commit -m "$*" && git push)
-# 3. Shell alias: k='kubectl' in ~/.bash_aliases (and ~/.zshrc)
+# 3. Git pull reconciliation (pull.rebase false)
+# 4. Git default editor (core.editor vi)
+# 5. Shell alias: k='kubectl' in ~/.bash_aliases (and ~/.zshrc)
 # ==============================================================================
 
 set -euo pipefail
@@ -119,11 +121,19 @@ if [[ "${CONFIGURE_GIT}" = true ]]; then
   run_git config --global alias.acp "${ACP_CMD}"
   ok "Configured 'git acp' alias"
 
+  # Configure Git pull reconciliation strategy (merge)
+  run_git config --global pull.rebase false
+  ok "Configured 'git config --global pull.rebase false'"
+
+  # Configure Git default editor to vi
+  run_git config --global core.editor "vi"
+  ok "Configured 'git config --global core.editor vi'"
+
   # Clean up any other extra git configs if previously added
   for extra_alias in st co cb br cm undo unstage lg; do
     run_git config --global --unset "alias.${extra_alias}" 2>/dev/null || true
   done
-  for extra_setting in init.defaultBranch push.autoSetupRemote pull.rebase; do
+  for extra_setting in init.defaultBranch push.autoSetupRemote; do
     run_git config --global --unset "${extra_setting}" 2>/dev/null || true
   done
 fi
@@ -211,6 +221,8 @@ echo ""
 echo "Configured:"
 echo -e "  ${CYAN}Git user${NC}         -> ${TARGET_NAME:-$(git config --global user.name)} <${TARGET_EMAIL:-$(git config --global user.email)}>"
 echo -e "  ${CYAN}git acp \"<msg>\"${NC} -> git add -A && git commit -m \"<msg>\" && git push"
+echo -e "  ${CYAN}pull.rebase${NC}      -> false"
+echo -e "  ${CYAN}core.editor${NC}      -> vi"
 echo -e "  ${CYAN}alias k='kubectl'${NC}"
 echo ""
 echo "To use 'k' immediately in your current terminal session, run:"

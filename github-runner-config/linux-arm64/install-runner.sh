@@ -84,15 +84,19 @@ fi
 # MODE 2: Specific runner configuration or targeted execution
 # ==============================================================================
 
+TOKEN_FROM_CLI=""
+
 # Parse CLI arguments
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --token=*)
       TOKEN="${1#*=}"
+      TOKEN_FROM_CLI="true"
       shift
       ;;
     --token)
       TOKEN="$2"
+      TOKEN_FROM_CLI="true"
       shift 2
       ;;
     --name=*)
@@ -165,9 +169,9 @@ if [ ! -f "config.sh" ]; then
   sudo ./bin/installdependencies.sh
 fi
 
-# Reset local configuration if --reconfig flag or RECONFIG=true is passed
-if [ "${RECONFIG}" = "true" ]; then
-  echo "==> Reconfiguration requested. Resetting local config for ${RUNNER_NAME}..."
+# Reset local configuration if --reconfig flag or explicit token is passed
+if [ "${RECONFIG}" = "true" ] || [ -n "${TOKEN_FROM_ENV}" ] || [ -n "${TOKEN_FROM_CLI}" ]; then
+  echo "==> Re-registration / token provided. Resetting local config for ${RUNNER_NAME}..."
   rm -f .runner .credentials*
 fi
 

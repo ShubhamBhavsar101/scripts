@@ -8,6 +8,10 @@ Lightweight setup script for Git user identity, `git acp` shortcut, and `alias k
 
 - **Git User Setup**:
   - Automatically configures `user.name` and `user.email`.
+- **Git Pull Strategy**:
+  - Configures `pull.rebase false` (reconciles divergent branches via standard merge).
+- **Git Default Editor**:
+  - Sets `core.editor vi`.
 - **Git `acp` Shortcut**:
   - `git acp "<message>"`: One-step command to stage all changes (`git add -A`), commit with message, and push to remote (`git push` with automatic upstream fallback).
 - **Kubernetes Alias**:

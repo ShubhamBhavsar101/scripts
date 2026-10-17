@@ -2,10 +2,11 @@
 set -euo pipefail
 
 # ==============================================================================
-# Official installation method for kind (Kubernetes in Docker) and kubectl
+# Official installation method for kind, kubectl, and kustomize
 # Sources:
 # - kind: https://kind.sigs.k8s.io/docs/user/quick-start/#installing-from-release-binaries
 # - kubectl: https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/
+# - kustomize: https://kubectl.docs.kubernetes.io/installation/kustomize/binaries/
 # ==============================================================================
 
 ARCH="$(uname -m)"
@@ -47,8 +48,20 @@ chmod +x ./kubectl
 sudo mv ./kubectl /usr/local/bin/kubectl
 
 # ------------------------------------------------------------------------------
+# 3. Install kustomize
+# ------------------------------------------------------------------------------
+echo "Installing kustomize..."
+TMP_KUSTOMIZE_DIR="$(mktemp -d -t kustomize-XXXXXX)"
+curl -fsSL "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash -s -- "${TMP_KUSTOMIZE_DIR}"
+
+sudo mv "${TMP_KUSTOMIZE_DIR}/kustomize" /usr/local/bin/kustomize
+sudo chmod +x /usr/local/bin/kustomize
+rm -rf "${TMP_KUSTOMIZE_DIR}"
+
+# ------------------------------------------------------------------------------
 # Verify installations
 # ------------------------------------------------------------------------------
 echo "==> Verifying installations:"
 kind version
 kubectl version --client
+kustomize version
