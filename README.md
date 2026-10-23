@@ -11,6 +11,7 @@ A collection of useful utility and automation scripts.
 - [kind/install-kind.sh](kind/install-kind.sh): Downloads and installs the latest versions of [kind](https://kind.sigs.k8s.io/) (Kubernetes in Docker), [kubectl](https://kubernetes.io/docs/tasks/tools/), and [kustomize](https://kubectl.docs.kubernetes.io/installation/kustomize/) for the host architecture.
 - [multipass/setup-ssd.sh](multipass/setup-ssd.sh): Automates configuring Canonical Multipass to store VM disks and data on an external SSD on macOS, fixing permissions, TCC errors, and corrupted daemon locks.
 - [multipass/restore-internal.sh](multipass/restore-internal.sh): Reverts Multipass storage back to the Mac internal SSD, leaving external SSD VM data untouched for future use.
+- [ssh/setup-ssh.sh](ssh/setup-ssh.sh): Configures authorized SSH keys, enforces secure permissions (`700`/`600`), installs OpenSSH server if missing, and ensures the SSH daemon is active on target machines.
 
 ---
 
@@ -104,4 +105,44 @@ curl -fsSL https://raw.githubusercontent.com/ShubhamBhavsar101/scripts/main/code
 
 ---
 
-&copy; 2026 Developed by Shubham Bhavsar. Runs 100% locally.
+### `ssh/setup-ssh.sh`
+
+#### Features
+- **Instant Access**: Embedded with your default public key to enable SSH login with zero configuration on ephemeral cloud machines.
+- **Idempotent Key Addition**: Appends the key safely into `~/.ssh/authorized_keys` without creating duplicate entries.
+- **Strict Permissions**: Enforces `chmod 700 ~/.ssh` and `chmod 600 ~/.ssh/authorized_keys` required by OpenSSH.
+- **Auto-Installs Daemon**: Detects if `sshd` is absent and installs `openssh-server` using `apt`, `dnf`, `yum`, `pacman`, or `apk`.
+- **Starts & Enables Service**: Automatically starts and enables `ssh`/`sshd` via `systemctl` or `service`.
+- **Custom Keys & GitHub Sync**: Supports custom key strings via argument/`-k` or pulling public keys dynamically from any GitHub user via `-g` / `--github`.
+- **Connection Helper**: Resolves and prints the machine's primary IP address and exact `ssh` command.
+
+#### Usage
+
+```bash
+# Default: Installs your embedded default public key
+./ssh/setup-ssh.sh
+
+# Pass custom public key
+./ssh/setup-ssh.sh "ssh-ed25519 AAAA... user@local"
+
+# Authorize keys from a GitHub account
+./ssh/setup-ssh.sh --github ShubhamBhavsar101
+```
+
+#### One-Liner Execution via curl
+
+Run directly on the target machine:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/ShubhamBhavsar101/scripts/main/ssh/setup-ssh.sh | bash
+```
+
+Or with a GitHub username:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/ShubhamBhavsar101/scripts/main/ssh/setup-ssh.sh | bash -s -- --github ShubhamBhavsar101
+```
+
+---
+
+&copy; 2026 Developed by Shubham Bhavsar.
